@@ -17,9 +17,11 @@ import {
 import {
   distanceMeters,
   geolocationPositionToPin,
+  GEO_WATCH_OPTIONS,
   HIGH_ACCURACY_GEO_OPTIONS,
   MAP_RADIUS_KM,
   MAP_RADIUS_METERS,
+  pinShouldUpdateState,
   truncate,
 } from "@/lib/utils";
 
@@ -181,7 +183,10 @@ function MapShell() {
       (pos) => {
         if (cancelled) return;
         const pin = geolocationPositionToPin(pos);
-        setPickLatLng(pin);
+        setPickLatLng((prev) => {
+          if (!pinShouldUpdateState(prev, pin)) return prev;
+          return pin;
+        });
         setLocationLoading(false);
         setHint(null);
         markFirstFix();
@@ -195,7 +200,7 @@ function MapShell() {
           setHint("Could not read GPS. Check permissions.");
         }
       },
-      HIGH_ACCURACY_GEO_OPTIONS,
+      GEO_WATCH_OPTIONS,
     );
 
     navigator.geolocation.getCurrentPosition(
